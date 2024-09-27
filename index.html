@@ -2,145 +2,46 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>年賀状料金シミュレータ</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Arial', sans-serif;
-        }
-        .container {
-            max-width: 400px;
-            margin-top: 50px;
-        }
-        h1 {
-            color: #343a40;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .form-step {
-            display: none;
-            position: absolute;
-            width: 100%;
-            transition: all 0.5s ease;
-        }
-        .form-step.active {
-            display: block;
-        }
-        .slide-left {
-            transform: translateX(-100%);
-        }
-        .slide-right {
-            transform: translateX(100%);
-        }
-        .total-price {
-            font-size: 1.5em;
-            text-align: center;
-            margin-top: 20px;
-            color: #17a2b8;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container shadow-lg p-4 bg-white rounded position-relative">
+    <div class="container">
         <h1>年賀状料金シミュレータ</h1>
-
-        <!-- Step 1: 仕上がり選択 -->
-        <div class="form-step active" id="step-1">
-            <label for="finish" class="form-label">仕上がり</label>
-            <select id="finish" class="form-select">
-                <option value="写真綺麗仕上げ">写真綺麗仕上げ</option>
-                <option value="印刷仕上げ">印刷仕上げ</option>
+        <form id="priceCalculator">
+            <label for="finish">仕上がり:</label>
+            <select id="finish" name="finish">
+                <option value="photo">写真綺麗仕上げ</option>
+                <option value="print">印刷仕上げ</option>
             </select>
-            <button class="btn btn-primary w-100 mt-3" onclick="nextStep(2)">次へ</button>
-        </div>
 
-        <!-- Step 2: グレード選択 -->
-        <div class="form-step" id="step-2">
-            <label for="grade" class="form-label">グレード</label>
-            <select id="grade" class="form-select">
-                <option value="ハイグレード">ハイグレード</option>
-                <option value="プレミアム">プレミアム</option>
-                <option value="スタンダード">スタンダード</option>
-                <option value="ライト">ライト</option>
+            <label for="grade">グレード:</label>
+            <select id="grade" name="grade">
+                <option value="high">ハイグレード</option>
+                <option value="premium">プレミアム</option>
+                <option value="standard">スタンダード</option>
+                <option value="light">ライト</option>
             </select>
-            <button class="btn btn-primary w-100 mt-3" onclick="nextStep(3)">次へ</button>
-        </div>
 
-        <!-- Step 3: 枚数選択 -->
-        <div class="form-step" id="step-3">
-            <label for="quantity" class="form-label">枚数</label>
-            <select id="quantity" class="form-select">
-                <option value="10">10枚</option>
-                <option value="20">20枚</option>
-                <option value="30">30枚</option>
-                <option value="40">40枚</option>
-                <option value="50">50枚</option>
+            <label for="period">注文期間:</label>
+            <select id="period" name="period">
+                <option value="super_early">超早割</option>
+                <option value="early">早割</option>
+                <option value="normal">通常</option>
             </select>
-            <button class="btn btn-primary w-100 mt-3" onclick="nextStep(4)">次へ</button>
-        </div>
 
-        <!-- Step 4: 注文期間選択 -->
-        <div class="form-step" id="step-4">
-            <label for="period" class="form-label">注文期間</label>
-            <select id="period" class="form-select">
-                <option value="超早割">超早割</option>
-                <option value="早割">早割</option>
-                <option value="通常">通常</option>
-            </select>
-            <button class="btn btn-success w-100 mt-3" onclick="calculatePrice()">料金計算</button>
-        </div>
+            <label for="quantity">枚数:</label>
+            <input type="number" id="quantity" name="quantity" value="15">
 
-        <!-- 合計料金表示 -->
-        <div class="total-price mt-4">
-            合計料金: <span id="total-price">0</span>円
-        </div>
+            <div class="prices">
+                <p>通常料金: <span id="normalPrice">1,500円</span></p>
+                <p>超早割りから: <span id="discountPrice">2,500円</span></p>
+                <p>データで注文コース: <span id="dataOrderPrice">4,500円</span></p>
+            </div>
+
+            <button type="button" onclick="calculatePrice()">料金計算</button>
+        </form>
     </div>
-
-    <!-- Bootstrap 5 のJS と Popper.js -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-        let currentStep = 1;
-
-        function nextStep(step) {
-            const currentForm = document.getElementById(`step-${currentStep}`);
-            const nextForm = document.getElementById(`step-${step}`);
-
-            // スライドアニメーション
-            currentForm.classList.add('slide-left');
-            setTimeout(() => {
-                currentForm.classList.remove('active');
-                nextForm.classList.add('active');
-                currentStep = step;
-            }, 500);
-        }
-
-        function calculatePrice() {
-            const finish = document.getElementById('finish').value;
-            const grade = document.getElementById('grade').value;
-            const quantity = document.getElementById('quantity').value;
-            const period = document.getElementById('period').value;
-
-            fetch('/calculate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    finish: finish,
-                    grade: grade,
-                    quantity: quantity,
-                    period: period
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('total-price').textContent = data.total_price;
-            });
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
